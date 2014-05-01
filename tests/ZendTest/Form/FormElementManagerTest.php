@@ -12,6 +12,7 @@ namespace ZendTest\Form;
 use Zend\Form\Factory;
 use Zend\Form\Form;
 use Zend\Form\FormElementManager;
+use ZendTest\Form\TestAsset\FormWithInit;
 
 /**
  * @group      Zend_Form
@@ -123,4 +124,31 @@ class FormElementManagerTest extends \PHPUnit_Framework_TestCase
         $this->manager->get('sharedElement');
         $this->manager->get('sharedElement');
     }
+
+    /**
+     * @group 6132
+     */
+    public function testFormInit()
+    {
+        $sm = new \Zend\ServiceManager\ServiceManager(
+            new \Zend\ServiceManager\Config(
+                array(
+                    'factories' => array(
+                        'MyFormFactory' => function() {
+                            return new \ZendTest\Form\TestAsset\FormWithInit();
+                        }
+                    )
+                )
+            )
+        );
+
+        $this->manager->addPeeringServiceManager($sm);
+
+        $returned = $this->manager->get('MyFormFactory');
+
+        $element = $returned->get('init_element');
+
+        $this->assertEquals('', $element->getValue());
+    }
+
 }
